@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1
-FROM debian:trixie-slim
+FROM debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2
 
 # --- Build Arguments for Metadata ---
 ARG BUILD_DATE
 ARG VCS_REF
-ARG SQUID_VERSION="6.13-2+deb13u2"
+ARG SQUID_VERSION="6.13-2+deb13u4"
 
 # --- OCI Standard Labels ---
 LABEL org.opencontainers.image.title="Squid Proxy" \
@@ -12,7 +12,7 @@ LABEL org.opencontainers.image.title="Squid Proxy" \
       org.opencontainers.image.version="6.13" \
       org.opencontainers.image.vendor="Haeniken" \
       org.opencontainers.image.licenses="GPL" \
-      org.opencontainers.image.source="https://github.com/Haeniken/docker-squid-bookworm" \
+      org.opencontainers.image.source="https://github.com/Haeniken/docker-squid-debian" \
       org.opencontainers.image.revision="${VCS_REF}" \
       org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.authors="me@haeniken.com"
@@ -26,12 +26,13 @@ ENV SQUID_VERSION=${SQUID_VERSION} \
     DEBIAN_FRONTEND=noninteractive
 
 # --- Installation & Hardening ---
-# Debian package revisions follow the moving trixie-slim base. Pin Squid via
-# SQUID_VERSION, but let supporting packages resolve from the same snapshot.
+# Refresh all base packages from stable/security before installing Squid.
+# Keep the Squid security revision explicit; resolve other packages from Trixie.
 # hadolint ignore=DL3008
 RUN set -eux; \
   # 1. Update & Install
   apt-get update; \
+  apt-get upgrade --no-install-recommends -y; \
   apt-get install --no-install-recommends -y \
     squid-openssl=${SQUID_VERSION} \
     ca-certificates \
@@ -75,12 +76,12 @@ COPY --chown=root:root --chmod=0555 entrypoint.sh /usr/sbin/entrypoint.sh
 # --- Healthcheck ---
 # Check if squid process is running and port is open
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD pgrep -x squid || exit 1
+  CMD ["pgrep", "-x", "squid"]
 
 STOPSIGNAL SIGTERM
 EXPOSE 3128/tcp
 
 # --- Security: Non-root User ---
-USER ${SQUID_USER}
+USER 13:13
 
 ENTRYPOINT ["/usr/sbin/entrypoint.sh"]

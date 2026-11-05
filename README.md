@@ -5,10 +5,10 @@
 [![Debian](https://img.shields.io/badge/Debian-13%20Trixie-A81D33?style=flat-square&logo=debian)](https://www.debian.org/)
 [![Squid](https://img.shields.io/badge/Squid-6.13-2E8B57?style=flat-square)](http://www.squid-cache.org/)
 [![OpenSSL](https://img.shields.io/badge/OpenSSL-enabled-721412?style=flat-square&logo=openssl)](https://www.openssl.org/)<br/>
-[![Docker Image CI](https://github.com/Haeniken/docker-squid-bookworm/actions/workflows/docker-image.yml/badge.svg)](https://github.com/Haeniken/docker-squid-bookworm/actions/workflows/docker-image.yml)
-[![Lint](https://github.com/Haeniken/docker-squid-bookworm/actions/workflows/lint.yml/badge.svg)](https://github.com/Haeniken/docker-squid-bookworm/actions/workflows/lint.yml)
-[![Security Scan](https://github.com/Haeniken/docker-squid-bookworm/actions/workflows/security.yml/badge.svg)](https://github.com/Haeniken/docker-squid-bookworm/actions/workflows/security.yml)
-[![Publish](https://github.com/Haeniken/docker-squid-bookworm/actions/workflows/publish.yml/badge.svg)](https://github.com/Haeniken/docker-squid-bookworm/actions/workflows/publish.yml)
+[![Docker Image CI](https://github.com/Haeniken/docker-squid-debian/actions/workflows/docker-image.yml/badge.svg)](https://github.com/Haeniken/docker-squid-debian/actions/workflows/docker-image.yml)
+[![Lint](https://github.com/Haeniken/docker-squid-debian/actions/workflows/lint.yml/badge.svg)](https://github.com/Haeniken/docker-squid-debian/actions/workflows/lint.yml)
+[![Security Scan](https://github.com/Haeniken/docker-squid-debian/actions/workflows/security.yml/badge.svg)](https://github.com/Haeniken/docker-squid-debian/actions/workflows/security.yml)
+[![Publish](https://github.com/Haeniken/docker-squid-debian/actions/workflows/publish.yml/badge.svg)](https://github.com/Haeniken/docker-squid-debian/actions/workflows/publish.yml)
 
 [🇺🇸 English](README.md) | [🇷🇺 Русский](README.ru.md)
 
@@ -64,6 +64,22 @@ sudo ./scripts/init.sh --user "$USER"
 dc up -d --build
 docker exec squid squid -k parse
 ```
+
+## Security Updates
+
+The image uses Debian 13.7 Trixie Slim and `squid-openssl` `6.13-2+deb13u4`.
+Each build upgrades all installed Debian packages from the stable and security
+repositories before installing Squid and its dependencies. The base image digest
+and Squid package revision are pinned in `build/Dockerfile`.
+
+To pick up new security fixes, refresh these pins and rebuild without cached
+installation layers:
+
+```bash
+docker compose build --pull --no-cache squid
+```
+
+CI uses Trivy 0.76.1 and fails on fixable HIGH/CRITICAL vulnerabilities.
 
 ## SMP (2 Workers)
 

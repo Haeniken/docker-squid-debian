@@ -29,13 +29,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Trivy filesystem scan
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
+          version: v0.76.1
           scan-type: fs
           scan-ref: .
+          scanners: vuln,misconfig,secret
+          skip-dirs: .git,logs,data
           vuln-type: os,library
           severity: HIGH,CRITICAL
           ignore-unfixed: true
@@ -49,10 +52,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
       - name: Set build metadata
         run: |
@@ -60,7 +63,7 @@ jobs:
           echo "VCS_REF=${GITHUB_SHA}" >> "$GITHUB_ENV"
 
       - name: Build image for scan
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: ./build
           file: ./build/Dockerfile
@@ -73,10 +76,12 @@ jobs:
           tags: local/squid:scan
 
       - name: Trivy image scan
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
+          version: v0.76.1
           scan-type: image
           image-ref: local/squid:scan
+          scanners: vuln,secret
           vuln-type: os,library
           severity: HIGH,CRITICAL
           ignore-unfixed: true
